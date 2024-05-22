@@ -1,0 +1,186 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auth
+spec:
+  selector:
+    matchLabels:
+      app: auth
+  template:
+    metadata:
+      name: auth_pod
+      labels:
+        app: auth
+    spec:
+      containers:
+      - name: auth
+        image: divyanshkohli856/auth_api
+        ports:
+        - containerPort: 5000
+        env:
+         - name: DATABASE_URI
+           value: "postgresql://postgres:123213@postgres:5432/ecomdb"
+          
+      
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: auth-service
+spec:
+  selector:
+    app: auth
+  ports:
+  - protocol: TCP 
+    port: 80
+    targetPort: 5000
+  
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cart
+spec:
+  selector:
+    matchLabels:
+      app: cart
+  template:
+    metadata:
+      name: cart_pod
+      labels:
+        app: cart
+    spec:
+      containers:
+      - name: cart
+        image: divyanshkohli856/cart_api
+        ports:
+        - containerPort: 5000
+        env:
+         - name: DATABASE_URI
+           value: "postgresql://postgres:123213@postgres:5432/ecomdb"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cart-service
+spec:
+  selector:
+    app: cart
+  ports:
+  - protocol: TCP 
+    port: 80
+    targetPort: 5000
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: product
+spec:
+  selector:
+    matchLabels:
+      app: product
+  template:
+    metadata:
+      labels:
+        app: product
+    spec:
+      containers:
+      - name: product
+        image: divyanshkohli856/product_api
+        ports:
+        - containerPort: 5000
+        env:
+        - name: DATABASE_URI
+          value: "postgresql://postgres:123213@postgres:5432/ecomdb"
+ 
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: product-service
+spec:
+  selector:
+    app: product
+  ports:
+  - protocol: TCP 
+    port: 80
+    targetPort: 5000
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: image
+spec:
+  selector:
+    matchLabels:
+      app: image
+  template:
+    metadata:
+      name: image_pod
+      labels:
+        app: image
+    spec:
+      containers:
+      - name: image
+        image: divyanshkohli856/image_api
+        ports:
+        - containerPort: 5000
+        env:
+         - name: DATABASE_URI
+           value: "postgresql://postgres:123213@postgres:5432/ecomdb"      
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: image-service
+spec:
+  selector:
+    app: image
+  ports:
+  - protocol: TCP 
+    port: 80
+    targetPort: 5000
+  
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:latest
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - name: config-volume
+          mountPath: /etc/nginx/conf.d
+      volumes:
+      - name: config-volume
+        configMap:
+          name: nginx-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-service
+spec:
+  selector:
+    app: nginx
+  ports:
+  - protocol: TCP
+    port: 8080
+    targetPort: 80
